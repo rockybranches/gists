@@ -22,6 +22,11 @@ gui = [
 [tool.uv]
 package = true
 
+# setuptools configurations
+[tool.setuptools]
+include-package-data = true
+packages = ["generate_terrain_py"]
+
 [project.scripts]
 generate-terrain = 'generate_terrain_py.cli:main'
 generate-terrain-gui = 'generate_terrain_py.gui:main'
