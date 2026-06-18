@@ -1,0 +1,9 @@
+services:
+  win-compiler:
+    image: cdrx/pyinstaller-windows:latest
+    container_name: terrain_win_compiler
+    volumes:
+      # Mount your current directory to the container's source root
+      - .:/src/
+    # environment:
+    # Tells the container to automatically run pip install -r requirements.txt inside Wine

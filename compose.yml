@@ -1,0 +1,7 @@
+include:
+  - ./generate-terrain.py/compose.yml
+# services:
+#   rb-gist-builds:
+#     build: .
+#     depends_on:
+#       - win-compiler
