@@ -1,7 +1,7 @@
 [project]
 name = "generate-terrain-py"
 version = "0.1.0"
-description = "Add your description here"
+description = "Parametric 3D Terrain Generator CLI."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
@@ -10,3 +10,18 @@ dependencies = [
     "plotly>=6.8.0",
     "scipy>=1.17.1",
 ]
+
+[dependency-groups]
+dev = [
+    "pyinstaller>=6.21.0",
+]
+gui = [
+    "pyqt6>=6.11.0",
+]
+
+[tool.uv]
+package = true
+
+[project.scripts]
+generate-terrain = 'generate_terrain_py.cli:main'
+generate-terrain-gui = 'generate_terrain_py.gui:main'

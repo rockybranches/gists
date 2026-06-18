@@ -18,34 +18,19 @@ Built with performance and simplicity in mind, this project uses **`uv`** for fr
 
 Because this project supports `uv`, you don't even need to manually activate a virtual environment. `uv` handles isolated environment provisioning seamlessly on the fly.
 
-Ensure you have [`uv`](https://github.com) installed, then choose one of the options below:
+Ensure you have `uv` installed, then
 
-### Option A: Run Instantly (No Setup Required)
+### Run Instantly
 You can execute the script along with its required environments directly in a single command line wrapper:
 ```bash
-uv run --with click --with numpy --with scipy --with plotly generate_terrain.py [OPTIONS]
-```
-
-### Option B: Local Project Initialization
-If you want to manage the dependencies locally for development:
-```bash
-# Initialize a uv project structure (if starting clean)
-uv init
-
-# Add required dependencies to the project
-uv add click numpy scipy plotly
-```
-
-Once added, you can run your application simply using:
-```bash
-uv run generate_terrain.py [OPTIONS]
+uv run generate-terrain [OPTIONS]
 ```
 
 ---
 
 ## 🎮 Usage Guide
 
-Run the script using `uv run`. By default, it generates a `terrain.stl` file in your current working directory.
+Run the script using `uv run generate-terrain -e`. By default, it generates a `terrain.stl` file in your current working directory.
 
 ### 📋 Available CLI Options
 
