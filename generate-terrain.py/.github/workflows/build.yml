@@ -2,9 +2,9 @@ name: Build Binaries
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -17,13 +17,15 @@ jobs:
         uses: astral-sh/setup-uv@v3
 
       - name: Build standalone binary
-        run: ./scripts/build-standalone-binary.sh
+        run: |
+          cd generate-terrain.py
+          ./scripts/build-standalone-binary.sh
 
       - name: Upload standalone binary
         uses: actions/upload-artifact@v4
         with:
           name: standalone-binary
-          path: dist/gui
+          path: generate-terrain.py/dist/gui
 
   build-windows:
     runs-on: ubuntu-latest
@@ -31,10 +33,12 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build windows binary
-        run: ./scripts/build-windows-binary.sh
+        run: |
+          cd generate-terrain.py
+          ./scripts/build-windows-binary.sh
 
       - name: Upload windows binary
         uses: actions/upload-artifact@v4
         with:
           name: windows-binary
-          path: dist/gui.exe
+          path: generate-terrain.py/dist/gui.exe
