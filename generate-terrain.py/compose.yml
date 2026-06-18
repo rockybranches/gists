@@ -1,4 +1,10 @@
 services:
+  linux-compiler:
+    container_name: terrain_linux_compiler
+    image: batonogov/pyinstaller-linux
+    volumes:
+      # Mount your current directory to the container's source root
+      - .:/src/
   win-compiler:
     container_name: terrain_win_compiler
     image: batonogov/pyinstaller-windows
