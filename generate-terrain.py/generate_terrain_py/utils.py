@@ -84,7 +84,7 @@ def write_stl(filename, vertices, faces):
         f.write(b"\x00" * 80)
         f.write(struct.pack("<I", len(faces)))
         for face in faces:
-            v1, v2, v3 = vertices[face], vertices[face], vertices[face]
+            v1, v2, v3 = vertices[face[0]], vertices[face[1]], vertices[face[2]]
             normal = np.cross(v2 - v1, v3 - v1)
             norm = np.linalg.norm(normal)
             if norm > 0:
