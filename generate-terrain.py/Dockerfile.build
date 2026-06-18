@@ -1,0 +1,30 @@
+FROM ubuntu:24.04
+
+# 1. Install system utilities and Wine to mimic a 64-bit Windows kernel
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y \
+    wine64 \
+    wine \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Initialize the headless Wine configuration environment
+ENV WINEPREFIX=/root/.wine
+ENV WINEARCH=win64
+RUN wineboot --init
+
+# 2. Download and install Astral's `uv` inside the container
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+# 3. Pull a headless Windows Python binary build inside Wine
+# We use Python 3.12 for peak stability across Scipy/PyQt binary wheels
+RUN curl -Lo /tmp/python_installer.exe https://python.org \
+    && wine /tmp/python_installer.exe /quiet InstallAllUsers=1 PrependPath=1 \
+    && rm /tmp/python_installer.exe
+
+# Ensure Wine paths update to track our newly installed Windows python environment
+ENV PATH="/root/.wine/drive_c/Program Files/Python312:/root/.wine/drive_c/Program Files/Python312/Scripts:${PATH}"
+
+# Establish container workspace
+WORKDIR /workspace
