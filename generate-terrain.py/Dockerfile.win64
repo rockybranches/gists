@@ -1,0 +1,1 @@
+FROM batonogov/pyinstaller-windows
