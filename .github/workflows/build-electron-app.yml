@@ -1,0 +1,121 @@
+name: Build Electron App
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - 'v*.*.*'          # e.g. v2.0.0 — triggers a Release upload
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Allow the workflow to create/update GitHub Releases
+permissions:
+  contents: write
+
+jobs:
+  # ────────────────────────────────────────────────────────────
+  # 1. Linux x64  (AppImage + tar.gz)
+  # ────────────────────────────────────────────────────────────
+  build-linux:
+    name: Build — Linux x64
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: generate-terrain-app/package-lock.json
+
+      - name: Install dependencies
+        working-directory: generate-terrain-app
+        run: npm ci --prefer-offline
+
+      - name: Build & package (Linux)
+        working-directory: generate-terrain-app
+        run: npm run dist:linux
+
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-x64
+          path: |
+            generate-terrain-app/release/*.AppImage
+            generate-terrain-app/release/*.tar.gz
+          if-no-files-found: error
+
+  # ────────────────────────────────────────────────────────────
+  # 2. Windows x64  (NSIS installer + portable exe)
+  #    Cross-compiled on ubuntu-latest via electron-builder + Wine
+  # ────────────────────────────────────────────────────────────
+  build-windows:
+    name: Build — Windows x64
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: generate-terrain-app/package-lock.json
+
+      - name: Install dependencies
+        working-directory: generate-terrain-app
+        run: npm ci --prefer-offline
+
+      - name: Build & package (Windows)
+        working-directory: generate-terrain-app
+        run: npm run dist:win
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-x64
+          path: |
+            generate-terrain-app/release/*.exe
+            generate-terrain-app/release/!(*-unpacked)/*.exe
+          if-no-files-found: error
+
+  # ────────────────────────────────────────────────────────────
+  # 3. Publish a GitHub Release (only on version tags)
+  # ────────────────────────────────────────────────────────────
+  release:
+    name: Publish Release
+    needs: [build-linux, build-windows]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-x64
+          path: dist/linux
+
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-x64
+          path: dist/windows
+
+      - name: Create / update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Terrain Generator ${{ github.ref_name }}
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}  # e.g. v2.0.0-beta → pre-release
+          generate_release_notes: true
+          files: |
+            dist/linux/*.AppImage
+            dist/linux/*.tar.gz
+            dist/windows/*.exe

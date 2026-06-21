@@ -365,3 +365,6 @@ pyrightconfig.json
 
 # End of https://www.toptal.com/developers/gitignore/api/python,emacs,node
 generate-terrain.py/index.html
+
+# electron-builder packaged output
+generate-terrain-app/release/

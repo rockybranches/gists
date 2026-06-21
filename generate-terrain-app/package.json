@@ -8,15 +8,50 @@
     "build:watch": "tsc --watch",
     "start": "npm run build && electron .",
     "start:nix": "nix develop --command npm start",
-    "dev": "npm run build && electron ."
+    "dev": "npm run build && electron .",
+    "dist": "npm run build && electron-builder --linux --win",
+    "dist:linux": "npm run build && electron-builder --linux",
+    "dist:win": "npm run build && electron-builder --win"
   },
   "keywords": [],
-  "author": "",
+  "author": "Rocky Branches",
   "license": "ISC",
   "type": "commonjs",
+  "build": {
+    "appId": "com.rockybranches.generate-terrain-app",
+    "productName": "Terrain Generator",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer.js",
+      "index.html",
+      "dist/**"
+    ],
+    "linux": {
+      "target": [
+        { "target": "AppImage", "arch": ["x64"] },
+        { "target": "tar.gz",   "arch": ["x64"] }
+      ],
+      "category": "Science"
+    },
+    "win": {
+      "target": [
+        { "target": "nsis",     "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "typescript": "^5.4.0",
-    "electron": "^41.7.1"
+    "electron": "^41.7.1",
+    "electron-builder": "^25.1.8"
   }
 }
