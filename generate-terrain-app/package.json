@@ -1,17 +1,22 @@
 {
   "name": "generate-terrain-app",
-  "version": "1.0.0",
-  "description": "Electron frontend for 3D terrain generation",
+  "version": "2.0.0",
+  "description": "Standalone Electron app for 3D terrain generation — no Python backend required",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
-    "start:nix": "nix develop --command npm start"
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "start": "npm run build && electron .",
+    "start:nix": "nix develop --command npm start",
+    "dev": "npm run build && electron ."
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.0",
     "electron": "^41.7.1"
   }
 }

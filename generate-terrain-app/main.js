@@ -1,93 +1,19 @@
-const { app, BrowserWindow, ipcMain } = require('electron')
+/**
+ * main.js — Electron main process.
+ *
+ * All terrain generation is now performed in-process using the compiled
+ * TypeScript terrain engine (dist/terrain.js).  No Python backend or HTTP
+ * server is needed.
+ */
+
+const { app, BrowserWindow, ipcMain, dialog } = require('electron')
 const path = require('path')
-const { spawn } = require('child_process')
+const fs = require('fs')
+
+// Compiled terrain engine (TypeScript → CommonJS via tsc)
+const { generateTerrain, generateStl } = require('./dist/terrain')
 
 let mainWindow = null
-let backendProcess = null
-let backendUrl = null
-let urlResolve = null
-let urlPromise = null
-
-const BACKEND_PORT = 8090
-const BACKEND_HOST = `http://localhost:${BACKEND_PORT}`
-
-function getProjectRoot() {
-  return path.resolve(__dirname, '..')
-}
-
-function startBackend(params) {
-  if (backendProcess) {
-    backendProcess.kill()
-    backendProcess = null
-  }
-
-  backendUrl = null
-  urlPromise = new Promise((resolve) => { urlResolve = resolve })
-
-  const args = [
-    'run', 'generate-terrain',
-    '--width', String(params.width),
-    '--length', String(params.length),
-    '--height-scale', String(params.heightScale),
-    '--scale', String(params.scale),
-    '--octaves', String(params.octaves),
-    '--roughness', String(params.roughness),
-    '--seed', String(params.seed),
-    '-s',
-  ]
-
-  const backendDir = path.join(getProjectRoot(), 'generate-terrain.py')
-
-  backendProcess = spawn('uv', args, {
-    cwd: backendDir,
-    stdio: ['ignore', 'pipe', 'pipe'],
-    env: { ...process.env, PYTHONUNBUFFERED: '1' },
-  })
-
-  let detected = false
-
-  backendProcess.stdout.on('data', (data) => {
-    const output = data.toString()
-    if (!detected && output.includes('Local server live at')) {
-      detected = true
-      backendUrl = BACKEND_HOST
-      if (urlResolve) {
-        urlResolve(backendUrl)
-        urlResolve = null
-      }
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.send('terrain-ready', backendUrl)
-      }
-    }
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('backend-status', output.trim())
-    }
-  })
-
-  backendProcess.stderr.on('data', (data) => {
-    const output = data.toString()
-    if (!detected && output.includes('Error') && urlResolve) {
-      urlResolve(null)
-      urlResolve = null
-    }
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('backend-error', output.trim())
-    }
-  })
-
-  backendProcess.on('close', (code) => {
-    backendProcess = null
-    if (!detected) {
-      if (urlResolve) {
-        urlResolve(null)
-        urlResolve = null
-      }
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.send('backend-error', `Backend exited with code ${code}`)
-      }
-    }
-  })
-}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -96,11 +22,11 @@ function createWindow() {
     minWidth: 900,
     minHeight: 600,
     title: 'Terrain Generator',
+    backgroundColor: '#0f1117',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
-      webviewTag: true,
     },
   })
 
@@ -108,32 +34,62 @@ function createWindow() {
   mainWindow.on('closed', () => { mainWindow = null })
 }
 
+// ──────────────────────────────────────────────────────────────────────────────
+// IPC: generate terrain heightmap data → return to renderer for Plotly
+// ──────────────────────────────────────────────────────────────────────────────
 ipcMain.handle('generate-terrain', (_event, params) => {
-  startBackend(params)
+  try {
+    const result = generateTerrain({
+      width:       params.width       ?? 100,
+      length:      params.length      ?? 100,
+      heightScale: params.heightScale ?? 20,
+      baseHeight:  params.baseHeight  ?? 5,
+      scale:       params.scale       ?? 50,
+      octaves:     params.octaves     ?? 4,
+      roughness:   params.roughness   ?? 0.5,
+      seed:        params.seed        ?? 42,
+    })
+    return { ok: true, data: result }
+  } catch (err) {
+    return { ok: false, error: String(err) }
+  }
 })
 
-ipcMain.handle('get-backend-url', () => {
-  return urlPromise || Promise.resolve(backendUrl || BACKEND_HOST)
+// ──────────────────────────────────────────────────────────────────────────────
+// IPC: export STL — opens a save dialog and writes binary STL
+// ──────────────────────────────────────────────────────────────────────────────
+ipcMain.handle('export-stl', async (_event, params) => {
+  try {
+    const { filePath, canceled } = await dialog.showSaveDialog(mainWindow, {
+      title: 'Export STL',
+      defaultPath: `terrain_${params.seed ?? 42}.stl`,
+      filters: [{ name: 'STL Files', extensions: ['stl'] }],
+    })
+
+    if (canceled || !filePath) return { ok: false, canceled: true }
+
+    const stlBuf = generateStl({
+      width:       params.width       ?? 100,
+      length:      params.length      ?? 100,
+      heightScale: params.heightScale ?? 20,
+      baseHeight:  params.baseHeight  ?? 5,
+      scale:       params.scale       ?? 50,
+      octaves:     params.octaves     ?? 4,
+      roughness:   params.roughness   ?? 0.5,
+      seed:        params.seed        ?? 42,
+    })
+
+    fs.writeFileSync(filePath, stlBuf)
+    return { ok: true, filePath }
+  } catch (err) {
+    return { ok: false, error: String(err) }
+  }
 })
 
 app.whenReady().then(() => {
   createWindow()
-  startBackend({
-    width: 100,
-    length: 100,
-    heightScale: 20,
-    scale: 50,
-    octaves: 4,
-    roughness: 0.5,
-    seed: 42,
-  })
 })
 
 app.on('window-all-closed', () => {
-  if (backendProcess) backendProcess.kill()
   if (process.platform !== 'darwin') app.quit()
-})
-
-app.on('before-quit', () => {
-  if (backendProcess) backendProcess.kill()
 })

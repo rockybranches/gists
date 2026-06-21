@@ -2,15 +2,10 @@ const { contextBridge, ipcRenderer } = require('electron')
 
 contextBridge.exposeInMainWorld('electronAPI', {
   platform: process.platform,
+
+  /** Generate terrain heightmap in the main process and return z-data */
   generateTerrain: (params) => ipcRenderer.invoke('generate-terrain', params),
-  getBackendUrl: () => ipcRenderer.invoke('get-backend-url'),
-  onTerrainReady: (callback) => {
-    ipcRenderer.on('terrain-ready', (_event, url) => callback(url))
-  },
-  onStatus: (callback) => {
-    ipcRenderer.on('backend-status', (_event, msg) => callback(msg))
-  },
-  onError: (callback) => {
-    ipcRenderer.on('backend-error', (_event, msg) => callback(msg))
-  },
+
+  /** Open a save dialog and write a binary STL file */
+  exportStl: (params) => ipcRenderer.invoke('export-stl', params),
 })
