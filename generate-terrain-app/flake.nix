@@ -15,6 +15,7 @@
           buildInputs = with pkgs; [
             nodejs
             electron
+            wine  # for electron-builder Windows cross-compilation
           ];
 
           shellHook = ''
