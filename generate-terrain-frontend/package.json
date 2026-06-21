@@ -1,11 +1,11 @@
 {
   "name": "generate-terrain-frontend",
   "version": "1.0.0",
-  "description": "Electron frontend for terrain generation",
+  "description": "Electron frontend for 3D terrain generation",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start:nix": "nix develop --command npm start"
   },
   "keywords": [],
   "author": "",

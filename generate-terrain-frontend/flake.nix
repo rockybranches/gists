@@ -1,6 +1,6 @@
 {
   description = "Dev shell for generate-terrain-frontend (Electron app)";
-
+  
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
