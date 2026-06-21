@@ -1,5 +1,5 @@
 {
-  description = "Dev shell for generate-terrain-app (Electron app)";
+  description = "generate-terrain-app — standalone Electron app for 3D terrain generation";
   
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -11,6 +11,33 @@
       let
         pkgs = import nixpkgs { inherit system; };
       in {
+        packages.default = pkgs.stdenv.mkDerivation {
+          pname = "generate-terrain-app";
+          version = "2.0.1";
+          src = pkgs.lib.cleanSource ./.;
+
+          nativeBuildInputs = with pkgs; [ nodejs makeWrapper ];
+
+          buildPhase = ''
+            npm install --frozen-lockfile
+            npm run build
+          '';
+
+          installPhase = ''
+            mkdir -p $out/lib/generate-terrain-app $out/bin
+            cp -r dist main.js preload.js renderer.js index.html package.json $out/lib/generate-terrain-app/
+
+            makeWrapper ${pkgs.electron}/bin/electron $out/bin/generate-terrain-app \
+              --add-flags "$out/lib/generate-terrain-app"
+          '';
+
+          meta = {
+            description = "Standalone Electron app for 3D terrain generation — no Python backend required";
+            homepage = "https://github.com/anomalyco/gists";
+            license = "ISC";
+          };
+        };
+
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
             nodejs
