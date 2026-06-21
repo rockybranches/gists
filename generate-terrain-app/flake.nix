@@ -11,15 +11,20 @@
       let
         pkgs = import nixpkgs { inherit system; };
       in {
-        packages.default = pkgs.stdenv.mkDerivation {
+        packages.default = pkgs.buildNpmPackage {
           pname = "generate-terrain-app";
           version = "2.0.1";
           src = pkgs.lib.cleanSource ./.;
 
-          nativeBuildInputs = with pkgs; [ nodejs makeWrapper ];
+          npmDepsHash = "sha256-XDGPB6EKfMA3fxpIxwRYrQBnUpjuiGMu6tZ0MfWN4y8=";
+
+          npmFlags = [ "--ignore-scripts" ];
+
+          nativeBuildInputs = with pkgs; [ makeWrapper ];
+
+          buildInputs = with pkgs; [ electron ];
 
           buildPhase = ''
-            npm install --frozen-lockfile
             npm run build
           '';
 
