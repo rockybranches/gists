@@ -1,6 +1,6 @@
 {
   "name": "generate-terrain-app",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Standalone Electron app for 3D terrain generation — no Python backend required",
   "main": "main.js",
   "scripts": {
