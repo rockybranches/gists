@@ -1,5 +1,5 @@
 {
-  "name": "generate-terrain-frontend",
+  "name": "generate-terrain-app",
   "version": "1.0.0",
   "description": "Electron frontend for 3D terrain generation",
   "main": "main.js",

@@ -7,7 +7,7 @@ Welcome, AI Agent! This document provides the necessary context, architecture, a
 This repository acts as a workspace housing two primary projects related to 3D terrain generation.
 
 1. **`generate-terrain.py`**: A Python command-line utility for generating parameterized, pseudorandom 3D terrain maps.
-2. **`generate-terrain-frontend`**: An Electron-based desktop application frontend.
+2. **`generate-terrain-app`**: An Electron-based desktop application frontend.
 
 ### 🏗️ Directory Structure
 
@@ -20,7 +20,7 @@ This repository acts as a workspace housing two primary projects related to 3D t
 │   ├── pyproject.toml       # Python dependencies and project settings
 │   ├── index.html           # Large standalone HTML file (possibly for Plotly web view)
 │   └── README.md            # Backend specific documentation
-├── generate-terrain-frontend/ # Electron GUI
+├── generate-terrain-app/      # Electron GUI
 │   ├── flake.nix            # Nix development shell environment
 │   ├── package.json         # Node.js dependencies
 │   ├── main.js              # Electron main process entry point
@@ -67,18 +67,18 @@ The backend provides standalone executable builds for both Linux and Windows.
 
 ---
 
-## 🖥️ Frontend: `generate-terrain-frontend`
+## 🖥️ Frontend: `generate-terrain-app`
 
 A thin Electron desktop wrapper meant to interact with or provide a visual interface for the terrain generation.
 
 ### 📦 Environment & Dependencies (`Nix` + `npm`)
 This directory utilizes a **Nix Flake** for a reproducible development environment.
-- **Nix Shell**: The environment provisions Node.js and Electron natively. Run `nix develop` inside `generate-terrain-frontend/` to enter the shell.
+- **Nix Shell**: The environment provisions Node.js and Electron natively. Run `nix develop` inside `generate-terrain-app/` to enter the shell.
 - **npm**: Standard `package.json` setup.
 
 ### 🏃 Running the Frontend
 ```bash
-cd generate-terrain-frontend
+cd generate-terrain-app
 # Enter Nix dev shell (optional but recommended for environment consistency)
 nix develop
 # Install dependencies

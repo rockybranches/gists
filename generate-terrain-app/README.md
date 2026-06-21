@@ -1,4 +1,4 @@
-# generate-terrain-frontend
+# generate-terrain-app
 
 An Electron desktop application that provides a graphical interface for the [`generate-terrain.py`](../generate-terrain.py/README.md) backend. Adjust terrain parameters via a sidebar of sliders, hit **Generate**, and view an interactive Plotly 3D surface map — all without touching the command line.
 
@@ -30,7 +30,7 @@ An Electron desktop application that provides a graphical interface for the [`ge
 
 ```bash
 git clone <repo-url>
-cd gists/generate-terrain-frontend
+cd gists/generate-terrain-app
 ```
 
 ### 2. Install Node dependencies
@@ -80,7 +80,7 @@ The shell hook sets `ELECTRON_OVERRIDE_DIST_PATH` so that the Nix-managed Electr
 ## Project Structure
 
 ```
-generate-terrain-frontend/
+generate-terrain-app/
 ├── flake.nix          # Nix flake for reproducible dev shell
 ├── flake.lock         # Pinned Nix dependency lockfile
 ├── package.json       # Node.js dependencies and scripts

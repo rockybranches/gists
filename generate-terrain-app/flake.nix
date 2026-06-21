@@ -1,5 +1,5 @@
 {
-  description = "Dev shell for generate-terrain-frontend (Electron app)";
+  description = "Dev shell for generate-terrain-app (Electron app)";
   
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -18,7 +18,7 @@
           ];
 
           shellHook = ''
-            echo "generate-terrain-frontend dev shell"
+            echo "generate-terrain-app dev shell"
             echo "  Node.js: $(node --version)"
             echo "  npm:     $(npm --version)"
             echo "  Electron: $(electron --version 2>/dev/null || echo 'not found')"
