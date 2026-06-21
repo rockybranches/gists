@@ -26,19 +26,3 @@ jobs:
         with:
           name: standalone-binary
           path: generate-terrain.py/dist/gui
-
-  build-windows:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build windows binary
-        run: |
-          cd generate-terrain.py
-          ./scripts/build-windows-binary.sh
-
-      - name: Upload windows binary
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-binary
-          path: generate-terrain.py/dist/gui.exe
