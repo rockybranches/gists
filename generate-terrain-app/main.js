@@ -11,7 +11,7 @@ const path = require('path')
 const fs = require('fs')
 
 // Compiled terrain engine (TypeScript → CommonJS via tsc)
-const { generateTerrain, generateStl } = require('./dist/terrain')
+const { generateTerrain, generateStl, generateGeochemistry, exportGeochemistryCsv } = require('./dist/terrain')
 
 let mainWindow = null
 
@@ -80,6 +80,52 @@ ipcMain.handle('export-stl', async (_event, params) => {
     })
 
     fs.writeFileSync(filePath, stlBuf)
+    return { ok: true, filePath }
+  } catch (err) {
+    return { ok: false, error: String(err) }
+  }
+})
+
+// ──────────────────────────────────────────────────────────────────────────────
+// IPC: generate geochemistry element concentration grids
+// ──────────────────────────────────────────────────────────────────────────────
+ipcMain.handle('generate-geochemistry', (_event, params) => {
+  try {
+    const result = generateGeochemistry({
+      width:     params.width     ?? 100,
+      length:    params.length    ?? 100,
+      seed:      params.seed      ?? 42,
+      scale:     params.scale     ?? 50,
+      octaves:   params.octaves   ?? 4,
+      roughness: params.roughness ?? 0.5,
+    })
+    return { ok: true, data: result }
+  } catch (err) {
+    return { ok: false, error: String(err) }
+  }
+})
+
+// ──────────────────────────────────────────────────────────────────────────────
+// IPC: export geochemistry data as CSV
+// ──────────────────────────────────────────────────────────────────────────────
+ipcMain.handle('export-geochemistry-csv', async (_event, params) => {
+  try {
+    const result = generateGeochemistry({
+      width:     params.width     ?? 100,
+      length:    params.length    ?? 100,
+      seed:      params.seed      ?? 42,
+      scale:     params.scale     ?? 50,
+      octaves:   params.octaves   ?? 4,
+      roughness: params.roughness ?? 0.5,
+    })
+    const csv = exportGeochemistryCsv(result)
+    const { filePath, canceled } = await dialog.showSaveDialog(mainWindow, {
+      title: 'Export Geochemistry CSV',
+      defaultPath: `geochemistry_${params.seed ?? 42}.csv`,
+      filters: [{ name: 'CSV Files', extensions: ['csv'] }],
+    })
+    if (canceled || !filePath) return { ok: false, canceled: true }
+    fs.writeFileSync(filePath, csv, 'utf-8')
     return { ok: true, filePath }
   } catch (err) {
     return { ok: false, error: String(err) }

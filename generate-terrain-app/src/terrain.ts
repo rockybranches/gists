@@ -299,3 +299,104 @@ export function generateStl(params: TerrainParams): Buffer {
   );
   return writeStlBuffer(vertices, faces);
 }
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Geochemistry simulation — synthetic soil sample element concentrations
+// ──────────────────────────────────────────────────────────────────────────────
+
+export interface ElementDef {
+  name: string;
+  label: string;
+  bg: number;
+  amplitude: number;
+  scale: number;
+  units: string;
+}
+
+export const ELEMENT_DEFS: ElementDef[] = [
+  { name: 'Au', label: 'Gold',       bg: 0.005, amplitude: 0.05,  scale: 2.0, units: 'ppm' },
+  { name: 'Ag', label: 'Silver',     bg: 0.1,   amplitude: 0.3,   scale: 1.5, units: 'ppm' },
+  { name: 'Cu', label: 'Copper',     bg: 50,    amplitude: 40,    scale: 1.2, units: 'ppm' },
+  { name: 'Zn', label: 'Zinc',       bg: 70,    amplitude: 50,    scale: 0.8, units: 'ppm' },
+  { name: 'Pb', label: 'Lead',       bg: 15,    amplitude: 20,    scale: 1.3, units: 'ppm' },
+  { name: 'As', label: 'Arsenic',    bg: 5,     amplitude: 10,    scale: 1.4, units: 'ppm' },
+  { name: 'Fe', label: 'Iron',       bg: 50000, amplitude: 20000, scale: 1.0, units: 'ppm' },
+  { name: 'Mo', label: 'Molybdenum', bg: 1,     amplitude: 3,     scale: 1.8, units: 'ppm' },
+  { name: 'Co', label: 'Cobalt',     bg: 20,    amplitude: 15,    scale: 0.9, units: 'ppm' },
+  { name: 'Ni', label: 'Nickel',     bg: 50,    amplitude: 35,    scale: 1.1, units: 'ppm' },
+];
+
+export interface GeochemParams {
+  width: number;
+  length: number;
+  seed: number;
+  scale: number;
+  octaves: number;
+  roughness: number;
+}
+
+export interface GeochemResult {
+  elementGrids: { [key: string]: number[][] };
+  elements: ElementDef[];
+  width: number;
+  length: number;
+}
+
+export function generateGeochemistry(params: GeochemParams): GeochemResult {
+  const { width, length, scale, octaves, roughness } = params;
+
+  const result: GeochemResult = {
+    elementGrids: {},
+    elements: ELEMENT_DEFS,
+    width,
+    length,
+  };
+
+  for (const elem of ELEMENT_DEFS) {
+    let elemSeed = params.seed;
+    for (let i = 0; i < elem.name.length; i++) {
+      elemSeed = ((elemSeed << 5) - elemSeed) + elem.name.charCodeAt(i);
+      elemSeed = elemSeed & elemSeed;
+    }
+    elemSeed = Math.abs(elemSeed) % 2147483647;
+
+    const noise = generateHeightmap(
+      width, length,
+      scale * elem.scale,
+      octaves, roughness,
+      elemSeed,
+    );
+
+    const grid: number[][] = [];
+    for (let y = 0; y < length; y++) {
+      const row: number[] = [];
+      for (let x = 0; x < width; x++) {
+        const n = noise[y * width + x];
+        const conc = elem.bg + (n - 0.5) * 2 * elem.amplitude;
+        row.push(Math.max(elem.bg * 0.01, conc));
+      }
+      grid.push(row);
+    }
+    result.elementGrids[elem.name] = grid;
+  }
+
+  return result;
+}
+
+export function exportGeochemistryCsv(result: GeochemResult): string {
+  const cols = ['x', 'y'];
+  for (const elem of result.elements) {
+    cols.push(elem.name);
+  }
+  const rows = [cols.join(',')];
+  for (let y = 0; y < result.length; y++) {
+    for (let x = 0; x < result.width; x++) {
+      const vals = [String(x), String(y)];
+      for (const elem of result.elements) {
+        vals.push(result.elementGrids[elem.name][y][x].toFixed(6));
+      }
+      rows.push(vals.join(','));
+    }
+  }
+  return rows.join('\n');
+}

@@ -8,4 +8,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   /** Open a save dialog and write a binary STL file */
   exportStl: (params) => ipcRenderer.invoke('export-stl', params),
+
+  /** Generate simulated geochemistry element concentration grids */
+  generateGeochemistry: (params) => ipcRenderer.invoke('generate-geochemistry', params),
+
+  /** Export geochemistry data as a CSV file via save dialog */
+  exportGeochemistryCsv: (params) => ipcRenderer.invoke('export-geochemistry-csv', params),
 })
