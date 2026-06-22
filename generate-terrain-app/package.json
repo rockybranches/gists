@@ -1,6 +1,6 @@
 {
   "name": "generate-terrain-app",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Standalone Electron app for 3D terrain generation — no Python backend required",
   "main": "main.js",
   "scripts": {
@@ -32,15 +32,35 @@
     ],
     "linux": {
       "target": [
-        { "target": "AppImage", "arch": ["x64"] },
-        { "target": "tar.gz",   "arch": ["x64"] }
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "tar.gz",
+          "arch": [
+            "x64"
+          ]
+        }
       ],
       "category": "Science"
     },
     "win": {
       "target": [
-        { "target": "nsis",     "arch": ["x64"] },
-        { "target": "portable", "arch": ["x64"] }
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
       ]
     },
     "nsis": {
