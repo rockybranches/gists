@@ -67,10 +67,8 @@ function setLoading(active) {
     loadingOverlay.classList.remove('active')
     generateBtn.disabled = false
     generateBtn.textContent = '⛰ Generate Terrain'
-    if (geochemData) {
-      geochemBtn.disabled = false
-      exportCsvBtn.disabled = false
-    }
+    geochemBtn.disabled = false
+    exportCsvBtn.disabled = !geochemData
   }
 }
 
@@ -296,8 +294,9 @@ async function generateGeochemistry() {
     setStatus(`Error: ${err.message}`, 'error')
     console.error(err)
   } finally {
-    geochemBtn.disabled = false
-    setLoading(false)
+      console.log("Enabling geochem (setup completed successfully)...");
+      geochemBtn.disabled = false
+      setLoading(false)
   }
 }
 
